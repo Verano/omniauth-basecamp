@@ -20,6 +20,44 @@ describe OmniAuth::Strategies::Basecamp do
     end
   end
 
+  describe '#raw_info' do
+    it 'requests raw info' do
+      @access_token = double('OAuth2::AccessToken')
+      subject.stub(:access_token) { @access_token }
+      response = double('response', parsed: {"key" => "value"})
+      @access_token.should_receive(:get).with('/authorization.json').and_return(response)
+
+      subject.raw_info.should eq(key: "value")
+    end
+  end
+
+  describe '#info' do
+    it 'returns info' do
+      identity = {id: 1234, email_address: 'john@example.com'}
+      subject.stub(:raw_info).and_return(identity: identity)
+
+      subject.info.should eq(identity)
+    end
+  end
+
+  describe '#uid' do
+    it 'returns info' do
+      info = {id: 1234}
+      subject.stub(:info).and_return(info)
+
+      subject.uid.should eq(1234)
+    end
+  end
+
+  describe '#extra' do
+    it 'returns raw info' do
+      raw_info = {raw_info: true}
+      subject.stub(:raw_info).and_return(raw_info)
+
+      subject.extra.should eq(raw_info)
+    end
+  end
+
   describe '#client' do
     it 'has correct authorize url' do
       subject.client.options[:authorize_url].should eq('/authorization/new')
